@@ -73,11 +73,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .portrait-wrap::before, .portrait-wrap::after { position: absolute; width: 1px; height: 100%; background: linear-gradient(transparent, rgba(167,139,250,.1), transparent); content: ""; }
 .portrait-wrap::after { width: 100%; height: 1px; }
 .portrait-halo { position: absolute; bottom: 17px; width: 205px; height: 205px; border: 1px solid rgba(167,139,250,.25); border-radius: 50%; box-shadow: 0 0 52px rgba(139,92,246,.18), inset 0 0 35px rgba(6,182,212,.05); }
-.portrait { position: relative; display: grid; width: 155px; height: 178px; place-items: center; margin-top: 22px; overflow: hidden; border: 1px solid rgba(194,171,255,.48); border-radius: 80px 80px 29px 29px; background: linear-gradient(155deg, rgba(143,102,234,.33), rgba(14,22,40,.8) 69%); box-shadow: 0 0 35px rgba(139,92,246,.19); }
-.portrait::before { position: absolute; top: 29px; width: 57px; height: 68px; border: 1px solid rgba(205,194,255,.52); border-radius: 49% 49% 44% 44%; background: linear-gradient(150deg, rgba(205,194,255,.24), rgba(109,93,163,.22)); content: ""; }
-.portrait::after { position: absolute; bottom: -46px; width: 135px; height: 105px; border: 1px solid rgba(205,194,255,.4); border-radius: 55% 55% 0 0; background: linear-gradient(110deg, rgba(167,139,250,.32), rgba(6,182,212,.16)); content: ""; }
-.portrait-initials { position: relative; z-index: 1; margin-top: -41px; color: rgba(255,255,255,.82); font-size: 13px; font-weight: 600; }
-.portrait-initials span { color: var(--cyan); }
+.portrait { position: relative; width: 155px; height: 178px; margin-top: 22px; overflow: hidden; border: 1px solid rgba(194,171,255,.48); border-radius: 80px 80px 29px 29px; background: linear-gradient(155deg, rgba(143,102,234,.33), rgba(14,22,40,.8) 69%); box-shadow: 0 0 35px rgba(139,92,246,.19); }
+.portrait-image { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 38%; }
+.portrait::after { position: absolute; right: 0; bottom: 0; left: 0; height: 62px; background: linear-gradient(transparent, rgba(9,11,20,.78)); content: ""; pointer-events: none; }
 .portrait-spark { position: absolute; z-index: 2; color: #c5b4ff; }
 .spark-one { top: 18px; right: 24px; font-size: 17px; }
 .spark-two { bottom: 46px; left: 19px; color: var(--cyan); font-size: 12px; }
