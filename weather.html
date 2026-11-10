@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="查看全球城市即時天氣與未來七日預報。" />
+    <meta name="theme-color" content="#090b14" />
+    <title>天氣 Weather — 阮友雄</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <style>
+      .weather-main { min-height: calc(100vh - 78px); padding-top: 66px; padding-bottom: 80px; }
+      .weather-heading { margin-bottom: 29px; }
+      .weather-heading .section-index { color: #777b90; }
+      .weather-heading h1 { margin: 8px 0 7px; font-size: clamp(35px, 6vw, 52px); font-weight: 600; letter-spacing: -.05em; }
+      .weather-heading p { margin: 0; color: #85879a; font-size: 13px; }
+      .weather-search { position: relative; z-index: 5; max-width: 610px; margin-bottom: 25px; }
+      .search-form { display: flex; gap: 10px; }
+      .search-field { position: relative; flex: 1; }
+      .search-field label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+      .search-field input { width: 100%; min-height: 51px; padding: 0 17px 0 45px; border: 1px solid rgba(255,255,255,.11); border-radius: 10px; background: rgba(255,255,255,.045); color: var(--text); }
+      .search-field input::placeholder { color: #73768a; }
+      .search-icon { position: absolute; top: 50%; left: 16px; color: var(--cyan); transform: translateY(-50%); pointer-events: none; }
+      .search-form .button { min-height: 51px; }
+      .suggestions { position: absolute; top: calc(100% + 7px); right: 0; left: 0; display: none; max-height: 260px; padding: 6px; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; background: rgba(15,17,30,.97); box-shadow: 0 18px 45px rgba(0,0,0,.4); backdrop-filter: blur(18px); }
+      .suggestions.open { display: grid; }
+      .suggestion { padding: 10px 12px; border: 0; border-radius: 7px; background: transparent; color: var(--text); cursor: pointer; text-align: left; }
+      .suggestion:hover, .suggestion:focus-visible { background: rgba(167,139,250,.12); outline: none; }
+      .suggestion small { display: block; color: #85879a; font-size: 11px; }
+      .weather-status { min-height: 25px; margin: 0 0 12px; color: #8d90a6; font-size: 12px; }
+      .weather-status.error { color: #ff9aab; }
+      .weather-status[hidden] { display: none; }
+      .current-weather { position: relative; display: grid; grid-template-columns: 1.15fr .85fr; gap: 25px; padding: 29px; overflow: hidden; border-radius: 16px; }
+      .current-weather::before { position: absolute; top: -150px; right: 2%; width: 350px; height: 300px; border-radius: 50%; background: rgba(139,92,246,.13); filter: blur(80px); content: ""; pointer-events: none; }
+      .current-primary, .current-details { position: relative; }
+      .location-line { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+      .location-line h2 { margin: 0; font-size: 21px; font-weight: 600; }
+      .location-country { color: #85879a; font-size: 12px; }
+      .local-time { margin-top: 5px; color: #73768a; font-size: 11px; }
+      .temperature-line { display: flex; align-items: center; gap: 17px; margin-top: 24px; }
+      .weather-icon { font-size: 63px; line-height: 1; filter: drop-shadow(0 5px 16px rgba(103,232,249,.18)); }
+      .temperature { font-size: clamp(57px, 9vw, 82px); font-weight: 500; line-height: 1; letter-spacing: -.07em; }
+      .temperature span { margin-left: 4px; color: #c9c4d9; font-size: 31px; vertical-align: top; }
+      .weather-description { margin-top: 8px; color: #b6b3c5; font-size: 14px; }
+      .feels-like { margin-top: 5px; color: #85879a; font-size: 12px; }
+      .current-details { display: grid; grid-template-columns: 1fr 1fr; align-content: center; gap: 11px; }
+      .weather-metric { min-height: 91px; padding: 15px; border: 1px solid rgba(255,255,255,.07); border-radius: 11px; background: rgba(255,255,255,.025); }
+      .weather-metric span { display: block; color: #85879a; font-size: 11px; }
+      .weather-metric strong { display: block; margin-top: 6px; font-size: 21px; font-weight: 600; }
+      .weather-metric strong small { color: #a3a5b5; font-size: 11px; font-weight: 400; }
+      .forecast-section { margin-top: 31px; }
+      .forecast-heading { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+      .forecast-heading h2 { margin: 0; font-size: 17px; font-weight: 600; }
+      .forecast-heading span { color: #74778d; font-size: 10px; }
+      .forecast-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; }
+      .forecast-day { min-height: 156px; padding: 16px 10px; border-radius: 12px; text-align: center; }
+      .forecast-day h3 { margin: 0; color: #bcb9cb; font-size: 11px; font-weight: 500; }
+      .forecast-icon { margin: 13px 0 8px; font-size: 26px; }
+      .forecast-temperatures { display: flex; justify-content: center; gap: 9px; font-size: 13px; }
+      .forecast-temperatures span:last-child { color: #85879a; }
+      .forecast-rain { margin-top: 6px; color: #79dce8; font-size: 10px; }
+      .weather-footer { margin-top: 24px; color: #66697f; font-size: 10px; text-align: center; }
+      [aria-busy="true"] { opacity: .7; }
+      @media (max-width: 640px) {
+        .weather-main { min-height: calc(100vh - 67px); padding-top: 43px; padding-bottom: 55px; }
+        .weather-heading { margin-bottom: 23px; }
+        .weather-heading p { font-size: 11px; }
+        .search-form { gap: 7px; }
+        .search-form .button { gap: 8px; padding-inline: 12px; font-size: 11px; }
+        .current-weather { grid-template-columns: 1fr; gap: 24px; padding: 21px; }
+        .temperature-line { margin-top: 20px; }
+        .weather-icon { font-size: 53px; }
+        .current-details { gap: 8px; }
+        .weather-metric { min-height: 79px; padding: 12px; }
+        .weather-metric strong { font-size: 18px; }
+        .forecast-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+        .forecast-day { min-height: 130px; }
+        .forecast-day:last-child { grid-column: span 2; }
+      }
+    </style>
+    <script src="./weather.js" defer></script>
+  </head>
+  <body>
+    <div class="page-glow page-glow-one" aria-hidden="true"></div>
+    <div class="page-glow page-glow-two" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <nav class="nav-shell container" aria-label="主要導覽">
+        <a class="brand" href="./index.html" aria-label="阮友雄 — 回到首頁">
+          <span class="brand-mark">H<span>.</span></span>
+          <span class="brand-copy">
+            <strong>阮友雄</strong>
+            <span>NGUYEN HUU HUNG <i>·</i> MIS</span>
+          </span>
+        </a>
+        <button class="menu-toggle" type="button" aria-label="開啟導覽選單" aria-expanded="false" aria-controls="primary-menu">
+          <span></span><span></span>
+        </button>
+        <div class="nav-links" id="primary-menu">
+          <a class="nav-link" href="./index.html">回到首頁</a>
+          <a class="nav-link active" href="./weather.html" aria-current="page">天氣 Weather</a>
+        </div>
+      </nav>
+    </header>
+
+    <main class="weather-main container">
+      <div class="weather-heading">
+        <span class="section-index">LIVE CONDITIONS <i>/</i> 7-DAY FORECAST</span>
+        <h1>城市天氣<span class="gradient-text">探索</span><span class="heading-dot">.</span></h1>
+        <p>即時掌握天氣變化，為每一天做好準備。</p>
+      </div>
+
+      <section class="weather-search" aria-label="搜尋城市天氣">
+        <form class="search-form" id="search-form" role="search">
+          <div class="search-field">
+            <label for="city-input">搜尋城市</label>
+            <span class="search-icon" aria-hidden="true">⌕</span>
+            <input id="city-input" name="city" type="search" placeholder="輸入城市名稱，例如：臺北" autocomplete="off" aria-autocomplete="list" aria-controls="city-suggestions" aria-expanded="false" />
+            <div class="suggestions" id="city-suggestions" role="listbox" aria-label="城市建議"></div>
+          </div>
+          <button class="button button-primary" type="submit">搜尋 <span aria-hidden="true">↗</span></button>
+        </form>
+      </section>
+
+      <p class="weather-status" id="weather-status" role="status" aria-live="polite" hidden></p>
+
+      <section class="current-weather glass-card" id="current-weather" aria-labelledby="city-name" aria-busy="true">
+        <div class="current-primary">
+          <div class="location-line">
+            <h2 id="city-name">載入中…</h2>
+            <span class="location-country" id="city-country"></span>
+          </div>
+          <div class="local-time" id="local-time"></div>
+          <div class="temperature-line">
+            <span class="weather-icon" id="current-icon" aria-hidden="true">⛅</span>
+            <div>
+              <div class="temperature"><span id="current-temperature">--</span><span>°C</span></div>
+              <div class="weather-description" id="current-description">正在取得天氣資料…</div>
+              <div class="feels-like">體感溫度 <strong id="feels-like">--</strong>°C</div>
+            </div>
+          </div>
+        </div>
+        <div class="current-details" aria-label="目前天氣指標">
+          <div class="weather-metric"><span>相對濕度</span><strong><span id="humidity">--</span><small>%</small></strong></div>
+          <div class="weather-metric"><span>風速</span><strong><span id="wind-speed">--</span><small> km/h</small></strong></div>
+          <div class="weather-metric"><span>紫外線指數</span><strong id="uv-index">--</strong></div>
+          <div class="weather-metric"><span>今日最高 / 最低</span><strong><span id="today-high">--</span><small>° / </small><span id="today-low">--</span><small>°C</small></strong></div>
+        </div>
+      </section>
+
+      <section class="forecast-section" aria-labelledby="forecast-title">
+        <div class="forecast-heading">
+          <h2 id="forecast-title">未來七日預報</h2>
+          <span>FORECAST · 7 DAYS</span>
+        </div>
+        <div class="forecast-grid" id="forecast-grid" aria-live="polite"></div>
+      </section>
+      <p class="weather-footer">天氣資料由 Open-Meteo 提供</p>
+    </main>
+  </body>
+</html>
